@@ -1,0 +1,20 @@
+{
+  "name": "Blaze bot",
+  "description": "Build an Extension!",
+  "version": "1.0",
+  "manifest_version": 3,
+  "background": {
+    "service_worker": "dist/background/index.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://blaze.com/*"
+      ],
+      "js": ["dist/content/dom-bet.js"]
+    }
+  ],
+  "action": {
+    "default_title": "Click to start betting"
+  }
+}
