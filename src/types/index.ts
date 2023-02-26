@@ -16,6 +16,7 @@ export type BetResult = {
 }
 
 export type BetEvent = Event<EVENT.BET, Bet>;
-export type BetEndEvent = Event<EVENT.BET_END, BetResult>;
+export type StartBettingEvent = Event<EVENT.START_BETTING, Bet>;
+export type StopBettingEvent = Event<EVENT.START_BETTING>;
 
-export type AnyEvent = BetEvent | BetEndEvent;
+export type AnyEvent = BetEvent | StartBettingEvent | StopBettingEvent;

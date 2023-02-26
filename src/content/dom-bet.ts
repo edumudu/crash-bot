@@ -1,8 +1,9 @@
 import { EVENT, ROUND_STATUS, ROUND_BREAK_TIME } from '../constants'
 import { BetEvent, BetResult } from '../types'
-import { clickInBtn, getElement, getElementByTestId, getElementByText, typeInInput } from './dom';
+import { clickInBtn, getElement, getElementByTestId, getElementByText, typeInInput } from '../utils/dom';
 import { sendEventToBackground, onEvent } from '../utils'
 
+const isSimulating = false;
 let isScriptSetuped = false;
 let roundStatus: ROUND_STATUS = ROUND_STATUS.RUNNING;
 
@@ -48,7 +49,8 @@ async function handleBet(message: BetEvent) {
   // Bet
   typeInInput(amountEl, amount.toString());
   typeInInput(autoCashoutEl, cashoutMultiplier.toString());
-  clickInBtn(betBtnEl);
+
+  if(!isSimulating) clickInBtn(betBtnEl);
 
   await waitRoundEnd();
   const { crashedAt } = getLastRoundResult();
@@ -61,8 +63,9 @@ async function handleBet(message: BetEvent) {
     }
   }
 
-  sendEventToBackground(EVENT.BET_END, betResult);
   localStorage.removeItem('crash_recent_bets');
+
+  return betResult;
 }
 
 function monitorRoundStatus({ onRoundEnd }: { onRoundEnd?: () => void }) {
@@ -83,10 +86,11 @@ function monitorRoundStatus({ onRoundEnd }: { onRoundEnd?: () => void }) {
 function onFirstRoundEnd() {
   if (isScriptSetuped) return;
 
+  isScriptSetuped = true;
+
   sendEventToBackground(EVENT.DOM_INITIATED);
   onEvent<BetEvent>(EVENT.BET, handleBet);
 
-  isScriptSetuped = true;
   console.log('Dom script is fully initialized')
 }
 

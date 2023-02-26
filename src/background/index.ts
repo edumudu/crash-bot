@@ -1,26 +1,17 @@
 import { EVENT, CASHOUT_MULTIPLIER, START_BET_AMOUT } from '../constants';
-import { Bet, BetEndEvent } from '../types';
+import { Bet, StopBettingEvent, StartBettingEvent, BetResult } from '../types';
 import { onEvent, sendMessageToContentScript } from '../utils'
 
-const previusBets: Bet[] = []
-let isBetting = false;
+const isSimulating = true;
+export let isBetting = false;
 let canBet = false;
 
-function bet(betInfo: Bet) {
-  sendMessageToContentScript(EVENT.BET, betInfo);
+async function bet(betInfo: Bet) {
+  return sendMessageToContentScript<BetResult>(EVENT.BET, betInfo);
 }
 
-function onDOMinitiated() {
-  console.log('DOM is ready');
-  canBet = true;
-}
-
-function onBetEnd(message: BetEndEvent) {
-  if (message.type !== EVENT.BET_END) return;
-
-  const { crashedAt, bet: currentBet } = message.payload;
+function onBetEnd({ crashedAt, bet: currentBet }: BetResult) {
   const newBet = currentBet;
-  // const shouldKeepBetting = isBetting && previusBets.length < 10;
   const shouldKeepBetting = isBetting;
 
   if (crashedAt > currentBet.cashoutMultiplier) {
@@ -31,27 +22,42 @@ function onBetEnd(message: BetEndEvent) {
     newBet.amount = currentBet.amount * CASHOUT_MULTIPLIER;
   }
 
-  previusBets.push(currentBet);
-  if (shouldKeepBetting) bet(newBet);
+  if (!shouldKeepBetting) return;
+
+  bet(newBet).then(onBetEnd);
 }
 
-onEvent<BetEndEvent>(EVENT.DOM_INITIATED, onDOMinitiated);
-onEvent<BetEndEvent>(EVENT.BET_END, onBetEnd);
+async function onStartBetting(message: StartBettingEvent) {
+  if (!canBet || isBetting) return;
 
-chrome.action.onClicked.addListener(() => {
-  if (!canBet) return;
+  const { amount, cashoutMultiplier } = message.payload;
 
-  if (isBetting) {
-    console.log('Stopping betting')
-    isBetting = false;
-    return;
-  }
-
-  console.log('Starting betting')
   isBetting = true;
-
-  bet({
-    amount: START_BET_AMOUT,
-    cashoutMultiplier: CASHOUT_MULTIPLIER
+  console.log('Bet started', {
+    startAmount: amount,
+    cashoutMultiplier,
   })
-})
+
+  const betResult = await bet({
+    amount: amount,
+    cashoutMultiplier: cashoutMultiplier
+  });
+
+  console.log({betResult})
+
+  onBetEnd(betResult);
+}
+
+function onStopBetting() {
+  console.log('Bet stopped')
+  isBetting = false;
+}
+
+function onDOMinitiated() {
+  console.log('DOM is ready');
+  canBet = true;
+}
+
+onEvent(EVENT.DOM_INITIATED, onDOMinitiated);
+onEvent<StartBettingEvent>(EVENT.START_BETTING, onStartBetting);
+onEvent<StopBettingEvent>(EVENT.STOP_BETTING, onStopBetting);

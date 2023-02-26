@@ -1,7 +1,8 @@
 export enum EVENT {
   BET = 'bet',
   DOM_INITIATED = 'dom-initiated',
-  BET_END = 'bet-end'
+  START_BETTING = 'start-betting',
+  STOP_BETTING = 'stop-betting'
 }
 
 export enum ROUND_STATUS {
@@ -11,4 +12,4 @@ export enum ROUND_STATUS {
 
 export const ROUND_BREAK_TIME = 10 * 1000;
 export const START_BET_AMOUT = 0.1;
-export const CASHOUT_MULTIPLIER = 2;
+export const CASHOUT_MULTIPLIER = 2.3;

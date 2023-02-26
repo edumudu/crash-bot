@@ -1,8 +1,12 @@
 {
   "name": "Blaze bot",
-  "description": "Build an Extension!",
-  "version": "1.0",
+  "description": "Crash bot for blaze crash game",
+  "version": "0.0.1",
   "manifest_version": 3,
+  "permissions": [
+    "storage",
+    "tabs"
+  ],
   "background": {
     "service_worker": "dist/background/index.js"
   },
@@ -15,6 +19,6 @@
     }
   ],
   "action": {
-    "default_title": "Click to start betting"
+    "default_popup": "dist/src/popup/index.html"
   }
 }
