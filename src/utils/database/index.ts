@@ -1,3 +1,5 @@
+import { logger } from '../logger';
+
 export function createDatabase(name: string) {
     const request = indexedDB.open(name, 3);
 
@@ -23,7 +25,7 @@ export function createDatabase(name: string) {
         objectStore.createIndex('crashedAt', 'crashedAt', { unique: false });
 
         objectStore.transaction.oncomplete = function (event) {
-          console.log("ObjectStore Created.");
+          logger.info("ObjectStore Created.");
         }
       }
 
@@ -37,7 +39,7 @@ export function createDatabase(name: string) {
         // @ts-ignore
         db = event.target.result as IDBDatabase;
 
-        console.log("DB OPENED.");
+        logger.info("DB OPENED.");
         resolve(db);
       }
     })

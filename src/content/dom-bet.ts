@@ -1,3 +1,4 @@
+import { logger } from '~/utils/logger';
 import { EVENT, ROUND_STATUS, ROUND_BREAK_TIME } from '../constants'
 import { BetEvent } from '../types'
 import { sendEventToBackground, onEvent } from '../utils'
@@ -9,10 +10,10 @@ let roundStatus: ROUND_STATUS = ROUND_STATUS.RUNNING;
 
 const betProvider = new BlazeProvider({ isSimulating });
 
-console.log('dom-bet.js Loaded')
+logger.info('dom-bet.js Loaded')
 
 async function handleBet(message: BetEvent) {
-  console.log('Starting Bet', message.payload);
+  logger.info('Starting Bet', message.payload);
 
   const { amount, cashoutMultiplier } = message.payload;
 
@@ -24,7 +25,7 @@ async function handleBet(message: BetEvent) {
 
 function monitorRoundStatus({ onRoundEnd }: { onRoundEnd?: () => void }) {
   betProvider.waitRoundEnd().then(() => {
-    console.log('Round ended');
+    logger.info('Round ended');
 
     roundStatus = ROUND_STATUS.ENDED;
     onRoundEnd?.();
@@ -45,7 +46,7 @@ function onFirstRoundEnd() {
   sendEventToBackground(EVENT.DOM_INITIATED);
   onEvent<BetEvent>(EVENT.BET, handleBet);
 
-  console.log('Dom script is fully initialized')
+  logger.info('Dom script is fully initialized')
 }
 
 window.addEventListener('load', () => monitorRoundStatus({ onRoundEnd: onFirstRoundEnd }));

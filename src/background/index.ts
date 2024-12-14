@@ -5,6 +5,7 @@ import { onEvent, sendMessageToContentScript } from '../utils'
 import { delayExecution, randomWait } from '../utils/ramdominess';
 import { createDatabase } from '../utils/database';
 import { BetService } from 'src/services/bet.service';
+import { logger } from '~/utils/logger';
 
 const isSimulating = true;
 export let isBetting = false;
@@ -30,10 +31,10 @@ function onBetEnd({ crashedAt, bet: currentBet }: BetResult) {
   const shouldKeepBetting = isBetting;
 
   if (crashedAt > currentBet.cashoutMultiplier) {
-    console.log('Bet won', currentBet);
+    logger.info('Bet won', currentBet);
     newBet.amount = START_BET_AMOUT;
   } else {
-    console.log('Bet lost', currentBet);
+    logger.info('Bet lost', currentBet);
     newBet.amount = safeMultiply(currentBet.amount, CASHOUT_MULTIPLIER);
   }
 
@@ -54,7 +55,7 @@ async function onStartBetting(message: StartBettingEvent) {
   const { amount, cashoutMultiplier } = message.payload;
 
   isBetting = true;
-  console.log('Bet started', {
+  logger.info('Bet started', {
     startAmount: amount,
     cashoutMultiplier,
   })
@@ -64,18 +65,18 @@ async function onStartBetting(message: StartBettingEvent) {
     cashoutMultiplier: cashoutMultiplier
   });
 
-  console.log({betResult})
+  logger.info({ betResult })
 
   onBetEnd(betResult);
 }
 
 function onStopBetting() {
-  console.log('Bet stopped')
+  logger.info('Bet stopped')
   isBetting = false;
 }
 
 function onDOMinitiated() {
-  console.log('DOM is ready');
+  logger.info('DOM is ready');
   canBet = true;
 }
 
@@ -86,5 +87,5 @@ onEvent<StopBettingEvent>(EVENT.STOP_BETTING, onStopBetting);
 createDatabase('crash-betting').then((database) => {
   db = database;
   betService = new BetService(db);
-  console.log('Database created');
+  logger.info('Database created');
 })
