@@ -13,7 +13,9 @@
     "skipLibCheck": true,
     "noEmit": true,
     "baseUrl": "./",
-    "paths": {},
+    "paths": {
+      "~/*": ["src/*"]
+    },
     "types": [
       "vite/client",
       "chrome",
